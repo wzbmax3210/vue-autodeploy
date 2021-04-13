@@ -6,8 +6,6 @@ WEBAPP_DIR=/usr/local/your_web_app_dir/
 vue_autodeploy_svn(){
     #SVN address
     SVN_PATH=http://test.com
-    #SVN code tmp address
-    CODE_TMP_PATH=/tmp/svntmp
     #vue project tmp
     VUE_TMP_PATH=/tmp/vuetmp
 
@@ -15,14 +13,10 @@ vue_autodeploy_svn(){
         mkdir -p $VUE_TMP_PATH
     fi
 
-    if [ ! -d $CODE_TMP_PATH ]; then
-        mkdir -p $CODE_TMP_PATH
-    fi
-
-    svn checkout $SVN_PATH $CODE_TMP_PATH
+    svn checkout $SVN_PATH $VUE_TMP_PATH
 
     cd $VUE_TMP_PATH
-    npm run build
+    npm install && npm run build
     while true; do
         echo 'packing vue project from svn......'
         if [ -d $VUE_TMP_PATH/dist ]; then
@@ -33,11 +27,37 @@ vue_autodeploy_svn(){
     done
 
     rm -rf $WEBAPP_DIR
+    mkdir -p $WEBAPP_DIR
     cp -r $VUE_TMP_PATH/dist/* $WEBAPP_DIR
+    rm -rf $VUE_TMP_PATH
 }
 
 vue_autodeploy_git(){
-    echo 'packing vue project from git......'
+    #GIT address
+    GIT_PATH=http://test.com
+    #vue project tmp
+    VUE_TMP_PATH=/tmp/vuetmp
+
+    if [ ! -d $VUE_TMP_PATH ]; then
+        mkdir -p $VUE_TMP_PATH
+    fi
+
+    git clone $GIT_PATH $VUE_TMP_PATH
+    cd $VUE_TMP_PATH
+    npm install && npm run build
+    while [ true ]; do
+        echo 'packing vue project from git......'
+        if [ -d $VUE_TMP_PATH/dist ]; then
+            echo 'packing is done'
+            break
+        fi
+        sleep 8
+    done
+
+    rm -rf $WEBAPP_DIR
+    mkdir -p $WEBAPP_DIR
+    cp -r $VUE_TMP_PATH/dist/* $WEBAPP_DIR
+    rm -rf $VUE_TMP_PATH
 }
 
 param_tip(){
